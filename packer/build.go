@@ -32,6 +32,20 @@ const (
 	UserVariablesConfigKey = "packer_user_variables"
 )
 
+// DebugMode defines the available debug modes.
+type DebugMode int
+
+const (
+	// DebugDisabled disables debugging.
+	DebugDisabled DebugMode = 0
+	// DebugOnStep pauses every step.
+	DebugOnStep = 1 << iota
+	// DebugOnError pauses when an error occured.
+	DebugOnError
+	// DebugOnProvisioned pauses after running all provisioners.
+	DebugOnProvisioned
+)
+
 // A Build represents a single job within Packer that is responsible for
 // building some machine image artifact. Builds are meant to be parallelized.
 type Build interface {
@@ -60,7 +74,7 @@ type Build interface {
 	//
 	// When SetDebug is set to true, parallelism between builds is
 	// strictly prohibited.
-	SetDebug(bool)
+	SetDebug(DebugMode)
 
 	// SetForce will enable/disable forcing a build when artifacts exist.
 	//
@@ -84,7 +98,7 @@ type coreBuild struct {
 	templatePath   string
 	variables      map[string]string
 
-	debug         bool
+	debug         DebugMode
 	force         bool
 	l             sync.Mutex
 	prepareCalled bool
@@ -128,6 +142,7 @@ func (b *coreBuild) Prepare() (warn []string, err error) {
 		BuildNameConfigKey:     b.name,
 		BuilderTypeConfigKey:   b.builderType,
 		DebugConfigKey:         b.debug,
+		"packer_debug_mode":    b.debug,
 		ForceConfigKey:         b.force,
 		TemplatePathKey:        b.templatePath,
 		UserVariablesConfigKey: b.variables,
@@ -290,7 +305,7 @@ PostProcessorRunSeqLoop:
 	return artifacts, err
 }
 
-func (b *coreBuild) SetDebug(val bool) {
+func (b *coreBuild) SetDebug(val DebugMode) {
 	if b.prepareCalled {
 		panic("prepare has already been called")
 	}

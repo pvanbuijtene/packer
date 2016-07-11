@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mitchellh/packer/helper/flag-slice"
 	"github.com/mitchellh/packer/packer"
 	"github.com/mitchellh/packer/template"
 )
@@ -20,10 +21,12 @@ type BuildCommand struct {
 
 func (c BuildCommand) Run(args []string) int {
 	var cfgColor, cfgDebug, cfgForce, cfgParallel bool
+	var cfgDebugModes []string
 	flags := c.Meta.FlagSet("build", FlagSetBuildFilter|FlagSetVars)
 	flags.Usage = func() { c.Ui.Say(c.Help()) }
 	flags.BoolVar(&cfgColor, "color", true, "")
 	flags.BoolVar(&cfgDebug, "debug", false, "")
+	flags.Var((*sliceflag.StringFlag)(&cfgDebugModes), "debug-mode", "")
 	flags.BoolVar(&cfgForce, "force", false, "")
 	flags.BoolVar(&cfgParallel, "parallel", true, "")
 	if err := flags.Parse(args); err != nil {
@@ -67,7 +70,26 @@ func (c BuildCommand) Run(args []string) int {
 		builds = append(builds, b)
 	}
 
+	debugMode := packer.DebugDisabled
+
 	if cfgDebug {
+		debugMode = packer.DebugOnStep
+	}
+
+	debugArgsMap := map[string]packer.DebugMode{
+		"onstep":    packer.DebugOnStep,
+		"onerror":   packer.DebugOnError,
+		"oncleanup": packer.DebugOnProvisioned,
+	}
+
+	for _, debugArg := range cfgDebugModes {
+		mode, ok := debugArgsMap[debugArg]
+		if ok {
+			debugMode |= mode
+		}
+	}
+
+	if debugMode != packer.DebugDisabled {
 		c.Ui.Say("Debug mode enabled. Builds will not be parallelized.")
 	}
 
@@ -103,7 +125,8 @@ func (c BuildCommand) Run(args []string) int {
 	// Set the debug and force mode and prepare all the builds
 	for _, b := range builds {
 		log.Printf("Preparing build: %s", b.Name())
-		b.SetDebug(cfgDebug)
+
+		b.SetDebug(debugMode)
 		b.SetForce(cfgForce)
 
 		warnings, err := b.Prepare()
@@ -168,7 +191,7 @@ func (c BuildCommand) Run(args []string) int {
 			}
 		}(b)
 
-		if cfgDebug {
+		if debugMode != packer.DebugDisabled {
 			log.Printf("Debug enabled, so waiting for build to finish: %s", b.Name())
 			wg.Wait()
 		}
@@ -280,7 +303,8 @@ Usage: packer build [options] TEMPLATE
 Options:
 
   -color=false               Disable color output (on by default)
-  -debug                     Debug mode enabled for builds
+  -debug                     Debug every step
+  -debug-mode=mode1,mode2    Debug in the modes, onerror, onprovisioned or onstep
   -except=foo,bar,baz        Build all builds other than these
   -force                     Force a build to continue if artifacts exist, deletes existing artifacts
   -machine-readable          Machine-readable output

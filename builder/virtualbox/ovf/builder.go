@@ -43,6 +43,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	state := new(multistep.BasicStateBag)
 	state.Put("config", b.config)
 	state.Put("debug", b.config.PackerDebug)
+	state.Put("debug_mode", b.config.PackerDebugMode)
 	state.Put("driver", driver)
 	state.Put("cache", cache)
 	state.Put("hook", hook)

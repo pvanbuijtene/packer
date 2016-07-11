@@ -2,10 +2,11 @@ package common
 
 import (
 	"fmt"
-	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/packer"
 	"log"
 	"time"
+
+	"github.com/mitchellh/multistep"
+	"github.com/mitchellh/packer/packer"
 )
 
 // MultistepDebugFn will return a proper multistep.DebugPauseFn to
@@ -27,13 +28,32 @@ func MultistepDebugFn(ui packer.Ui) multistep.DebugPauseFn {
 			locationString, name)
 
 		result := make(chan string, 1)
+
 		go func() {
-			line, err := ui.Ask(message)
-			if err != nil {
-				log.Printf("Error asking for input: %s", err)
+			if state.Get("debug_mode") != nil {
+				debugMode := state.Get("debug_mode").(packer.DebugMode)
+				debug := (debugMode & packer.DebugOnStep) != 0
+
+				if state.Get("handled-first-debug-step") == nil {
+					debug = debug || (((debugMode & packer.DebugOnError) != 0) && state.Get("error") != nil)
+					debug = debug || (((debugMode & packer.DebugOnProvisioned) != 0) && name == "StepProvision")
+				}
+
+				if debug {
+					if state.Get("handled-first-debug-step") == nil {
+						state.Put("handled-first-debug-step", true)
+					}
+
+					line, err := ui.Ask(message)
+					if err != nil {
+						log.Printf("Error asking for input: %s", err)
+					}
+
+					result <- line
+				}
 			}
 
-			result <- line
+			result <- ""
 		}()
 
 		for {

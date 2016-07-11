@@ -1,8 +1,9 @@
 package rpc
 
 import (
-	"github.com/mitchellh/packer/packer"
 	"net/rpc"
+
+	"github.com/mitchellh/packer/packer"
 )
 
 // An implementation of packer.Build where the build is actually executed
@@ -67,7 +68,7 @@ func (b *build) Run(ui packer.Ui, cache packer.Cache) ([]packer.Artifact, error)
 	return artifacts, nil
 }
 
-func (b *build) SetDebug(val bool) {
+func (b *build) SetDebug(val packer.DebugMode) {
 	if err := b.client.Call("Build.SetDebug", val, new(interface{})); err != nil {
 		panic(err)
 	}
@@ -124,7 +125,7 @@ func (b *BuildServer) Run(streamId uint32, reply *[]uint32) error {
 	return nil
 }
 
-func (b *BuildServer) SetDebug(val *bool, reply *interface{}) error {
+func (b *BuildServer) SetDebug(val *packer.DebugMode, reply *interface{}) error {
 	b.build.SetDebug(*val)
 	return nil
 }
