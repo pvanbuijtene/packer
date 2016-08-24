@@ -125,7 +125,6 @@ func (c BuildCommand) Run(args []string) int {
 	// Set the debug and force mode and prepare all the builds
 	for _, b := range builds {
 		log.Printf("Preparing build: %s", b.Name())
-
 		b.SetDebug(debugMode)
 		b.SetForce(cfgForce)
 

@@ -3,6 +3,8 @@ package packer
 import (
 	"reflect"
 	"testing"
+
+	"github.com/mitchellh/packer/packer"
 )
 
 func testBuild() *coreBuild {
@@ -123,7 +125,7 @@ func TestBuild_Prepare_Debug(t *testing.T) {
 	build := testBuild()
 	builder := build.builder.(*MockBuilder)
 
-	build.SetDebug(true)
+	build.SetDebug(packer.DebugOnStep)
 	build.Prepare()
 	if !builder.PrepareCalled {
 		t.Fatalf("should be called")

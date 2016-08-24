@@ -2,9 +2,10 @@ package rpc
 
 import (
 	"errors"
-	"github.com/mitchellh/packer/packer"
 	"reflect"
 	"testing"
+
+	"github.com/mitchellh/packer/packer"
 )
 
 var testBuildArtifact = &packer.MockArtifact{}
@@ -45,7 +46,7 @@ func (b *testBuild) Run(ui packer.Ui, cache packer.Cache) ([]packer.Artifact, er
 	}
 }
 
-func (b *testBuild) SetDebug(bool) {
+func (b *testBuild) SetDebug(packer.DebugMode) {
 	b.setDebugCalled = true
 }
 
@@ -105,7 +106,7 @@ func TestBuild(t *testing.T) {
 	}
 
 	// Test SetDebug
-	bClient.SetDebug(true)
+	bClient.SetDebug(packer.DebugOnStep)
 	if !b.setDebugCalled {
 		t.Fatal("should be called")
 	}

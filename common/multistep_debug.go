@@ -30,6 +30,7 @@ func MultistepDebugFn(ui packer.Ui) multistep.DebugPauseFn {
 		result := make(chan string, 1)
 
 		go func() {
+
 			if state.Get("debug_mode") != nil {
 				debugMode := state.Get("debug_mode").(packer.DebugMode)
 				debug := (debugMode & packer.DebugOnStep) != 0
