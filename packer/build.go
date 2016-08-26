@@ -20,6 +20,10 @@ const (
 	// debugging is enabled.
 	DebugConfigKey = "packer_debug"
 
+	// This is the key in configurations that is set to non-zero when Packer
+	// debugging is enabled.
+	DebugModeConfigKey = "packer_debug_mode"
+
 	// This is the key in configurations that is set to "true" when Packer
 	// force build is enabled.
 	ForceConfigKey = "packer_force"
@@ -142,7 +146,7 @@ func (b *coreBuild) Prepare() (warn []string, err error) {
 		BuildNameConfigKey:     b.name,
 		BuilderTypeConfigKey:   b.builderType,
 		DebugConfigKey:         b.debug,
-		"packer_debug_mode":    b.debug,
+		DebugModeConfigKey:     b.debug,
 		ForceConfigKey:         b.force,
 		TemplatePathKey:        b.templatePath,
 		UserVariablesConfigKey: b.variables,
