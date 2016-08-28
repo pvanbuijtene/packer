@@ -31,8 +31,9 @@ func MultistepDebugFn(ui packer.Ui) multistep.DebugPauseFn {
 
 		go func() {
 
-			if state.Get("debug_mode") != nil {
-				debugMode := state.Get("debug_mode").(packer.DebugMode)
+			debugMode, ok := state.Get("debug_mode").(int)
+
+			if ok {
 				debug := (debugMode & packer.DebugOnStep) != 0
 
 				if state.Get("handled-first-debug-step") == nil {
