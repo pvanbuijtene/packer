@@ -303,7 +303,7 @@ Options:
 
   -color=false               Disable color output (on by default)
   -debug                     Debug every step
-  -debug-mode=mode1,mode2    Debug in the modes, onerror, onprovisioned or onstep
+  -debug-mode=mode1,mode2    Debug in modes onerror, onprovisioned or onstep
   -except=foo,bar,baz        Build all builds other than these
   -force                     Force a build to continue if artifacts exist, deletes existing artifacts
   -machine-readable          Machine-readable output

@@ -30,7 +30,6 @@ func MultistepDebugFn(ui packer.Ui) multistep.DebugPauseFn {
 		result := make(chan string, 1)
 
 		go func() {
-
 			debugMode, ok := state.Get("debug_mode").(int)
 
 			if ok {
@@ -39,13 +38,13 @@ func MultistepDebugFn(ui packer.Ui) multistep.DebugPauseFn {
 				if state.Get("handled-first-debug-step") == nil {
 					debug = debug || (((debugMode & packer.DebugOnError) != 0) && state.Get("error") != nil)
 					debug = debug || (((debugMode & packer.DebugOnProvisioned) != 0) && name == "StepProvision")
+
+					if debug {
+						state.Put("handled-first-debug-step", true)
+					}
 				}
 
 				if debug {
-					if state.Get("handled-first-debug-step") == nil {
-						state.Put("handled-first-debug-step", true)
-					}
-
 					line, err := ui.Ask(message)
 					if err != nil {
 						log.Printf("Error asking for input: %s", err)
